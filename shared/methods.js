@@ -1,4 +1,14 @@
 Meteor.methods({
+    addComment: function(comment){
+        console.log("add comment method running")
+      if (this.userId){
+          comment.createdOn = new Date();
+          comment.owner = this.userId;
+          return Comments.insert(comment);
+      }
+        return;
+    },
+
     updateDocPrivacy: function(doc){
         console.log("update doc privacy method");
         console.log(doc);
@@ -21,9 +31,9 @@ Meteor.methods({
             return id;
         }
     },
-    addEditingUsers:function(){
+    addEditingUsers:function(docid){
         var doc, user, eusers;
-        doc = Documents.findOne();
+        doc = Documents.findOne({_id:docid });
         if (!doc) { return;} //no doc
         if (!this.userId){ return;} // no logged in user
 

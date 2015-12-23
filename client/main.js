@@ -1,5 +1,25 @@
 Meteor.subscribe("documents");
 Meteor.subscribe("editingUsers");
+Meteor.subscribe("comments");
+
+
+Router.configure({
+    layoutTemplate: 'ApplicationLayout'
+});
+
+Router.route('/', function(){
+    console.log("you hit /");
+    this.render("navbar", {to: "header"});
+    this.render("docList", {to: "main"});
+});
+
+Router.route('/documents/:_id', function(){
+    console.log("you hit documents " + this.params._id);
+    Session.set("docid", this.params._id);
+    this.render("navbar", {to: "header"});
+    this.render("docItem", {to: "main"});
+});
+
 
 Template.editor.helpers({
     docid: function(){
@@ -16,7 +36,7 @@ Template.editor.helpers({
             editor.on("change", function(cm_editor, info){
                 console.log(cm_editor.getValue());
                 $("#viewer_iframe").contents().find("html").html(cm_editor.getValue());
-                Meteor.call("addEditingUsers");
+                Meteor.call("addEditingUsers", Session.get("docid"));
             })
         }
     }
@@ -27,7 +47,7 @@ Template.editingUsers.helpers({
         var users;
         var doc;
 
-        doc = Documents.findOne();
+        doc = Documents.findOne({_id:Session.get("docid")});
         if (!doc){ return;}
         eusers = EditingUsers.findOne({docid: doc._id});
 
@@ -77,6 +97,25 @@ Template.editableText.helpers({
         }
     }
 });
+
+
+Template.docList.helpers({
+    documents: function(){
+        return Documents.find()
+    }
+});
+
+Template.commentList.helpers({
+    comments: function(){
+        return Comments.find({docid: Session.get("docid")})
+    }
+})
+
+Template.insertCommentForm.helpers({
+    docid: function(){
+        return Session.get("docid");
+    }
+})
 
 //-------------------------------------------------------//
 //                EVENTS
